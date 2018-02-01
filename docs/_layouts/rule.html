@@ -1,0 +1,30 @@
+---
+layout: default
+---
+
+{% case page.severity %}
+  {% when 'Error' %}
+    {% assign severity-label = 'uk-label-danger' %}
+  {% when 'Warning' %}
+    {% assign severity-label = 'uk-label-warning' %}
+  {% when 'Info' %}
+    {% assign severity-label = '' %}  
+  {% else %}
+    {% assign severity-label = '' %}
+{% endcase %}
+<div class="uk-card uk-card-body">
+    <div>
+    <h3 class="uk-float-left">{{ page.description }}</h3>
+    <h4 class="uk-float-right">{{ page.title }}
+        <small><span style="vertical-align:text-top;"
+                     class="uk-label {{ severity-label }}">{{ page.severity }}</span></small>
+    </h4>
+    </div>
+
+    <hr class="uk-divider-icon">
+    <p>
+        {{ content }}
+    </p>
+</div>
+
+

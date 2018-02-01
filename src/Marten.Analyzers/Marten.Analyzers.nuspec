@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>Marten.Analyzers</id>
+    <version>0.0.0</version>
+    <title>Marten.Analyzers</title>
+    <authors>Joona-Pekka Kokko</authors>
+    <summary>Code Analyzers for Marten</summary>
+    <description>Code Analyzers for projects using Marten.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/jokokko/marten.analyzers</projectUrl>    
+    <licenseUrl>https://raw.githubusercontent.com/jokokko/marten.analyzers/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>marten.analyzers, marten, analyzers, roslyn</tags>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\netstandard1.3\Marten.Analyzers.dll" target="analyzers\dotnet\cs\" />
+    <file src="tools\*.ps1" target="tools\" />
+  </files>
+</package>

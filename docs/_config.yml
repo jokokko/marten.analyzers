@@ -1,0 +1,14 @@
+title: Marten Analyzers
+description: Roslyn analyzers for Marten
+collections:
+  rules:
+    output: true
+defaults:
+  - scope:
+      path: ""
+      type: "rules"
+    values:
+      layout: rule
+baseurl: /marten.analyzers
+repository: jokokko/marten.analyzers
+exclude: ["Gemfile*"]
