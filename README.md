@@ -1,7 +1,7 @@
-# Marten.Analyzers
+# Marten.Analyzers [![Build status](https://ci.appveyor.com/api/projects/status/hea16xybd755txv7?svg=true)](https://ci.appveyor.com/project/jokokko/marten-analyzers) [![NuGet Version](http://img.shields.io/nuget/v/Marten.Analyzers.svg?style=flat)](https://www.nuget.org/packages/Marten.Analyzers/)
 Code Analyzers for [Marten](http://jasperfx.github.io/marten/).
 
-**Package** TODO | **Platforms** .NET 4.6, .NET Standard 1.3
+**Package** [Marten.Analyzers](https://www.nuget.org/packages/Marten.Analyzers) | **Platforms** .NET 4.6, .NET Standard 1.3
 
 For rules, see https://jokokko.github.io/marten.analyzers/.
 
