@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Marten.Analyzers.Usage
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class SelectNPlus1Candidate : MartenInvocationAnalyzer
+    public sealed class SelectNPlus1Candidate : MartenInvocationAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Descriptors.Marten1000SelectNPlus1Candidate);
 
@@ -19,7 +19,11 @@ namespace Marten.Analyzers.Usage
             "IQuerySession.LoadMany",
             "IQuerySession.LoadManyAsync",
             "IQuerySession.Query",
-            "IQuerySession.QueryAsync")
+            "IQuerySession.QueryAsync",
+            "IBatchedQuery.Load",
+            "IBatchedQuery.LoadMany",
+            "IBatchedQuery.Query"
+            )
         {
         }
         protected override void Analyze(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpressionSyntax,

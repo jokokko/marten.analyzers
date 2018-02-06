@@ -5,7 +5,7 @@ Code Analyzers for [Marten](http://jasperfx.github.io/marten/).
 
 For rules, see https://jokokko.github.io/marten.analyzers/.
 
-Remarks: With one existing analyzer to identify Select N+1 issues, I created this package to aid me in code reviews.
+Remarks: The current analyzers exist to identify Select N+1 candidates to aid myself in code reviews.
 
 ![Warning on a SELECT N+1 issue candidate](assets/selectn1sample.png)
 

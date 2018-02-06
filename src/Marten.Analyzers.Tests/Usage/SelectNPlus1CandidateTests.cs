@@ -25,6 +25,7 @@ class TestClass {
 
 		using (var session = store.OpenSession())
 		{
+            var batch = session.CreateBatchQuery();
 			foreach (var n in new[] { 1, 2, 3})
 			{
 				var item = session.Load<TestClass>(n);
@@ -40,6 +41,7 @@ class TestClass {
             do
 			{
 				session.LoadMany<TestClass>(1);
+                batch.Query<TestClass>();
 			} while (true);	
             session.Load<TestClass>(1);
 		}   
@@ -49,21 +51,26 @@ class TestClass {
             Assert.Collection(diagnostics, d =>
             {
                 Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
-                Assert.Equal(13, d.Location.GetLineSpan().StartLinePosition.Line);
+                Assert.Equal(14, d.Location.GetLineSpan().StartLinePosition.Line);
             }, d =>
             {
                 Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
-                Assert.Equal(17, d.Location.GetLineSpan().StartLinePosition.Line);
+                Assert.Equal(18, d.Location.GetLineSpan().StartLinePosition.Line);
             },
             d =>
             {
                 Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
-                Assert.Equal(21, d.Location.GetLineSpan().StartLinePosition.Line);
+                Assert.Equal(22, d.Location.GetLineSpan().StartLinePosition.Line);
             },
             d =>
             {
                 Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
-                Assert.Equal(25, d.Location.GetLineSpan().StartLinePosition.Line);
+                Assert.Equal(26, d.Location.GetLineSpan().StartLinePosition.Line);
+            },
+            d =>
+            {
+                Assert.Equal(DiagnosticSeverity.Warning, d.Severity);
+                Assert.Equal(27, d.Location.GetLineSpan().StartLinePosition.Line);
             });
         }
     }

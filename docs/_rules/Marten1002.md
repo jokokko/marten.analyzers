@@ -1,18 +1,17 @@
 ---
-title: Marten1000
-description: Session queried within	an iteration
+title: Marten1002
+description: Session used as a method argument within an iteration
 category: Usage
 severity: Warning
 ---
 
 ## Cause
 
-Data is queried within an iteration (`while`, `do-while`, `foreach`, `for`) through `IQuerySession` (`Load`, `LoadAsync`, `LoadMany`, `LoadManyAsync`, `Query`, `QueryAsync`)
-or `IBatchedQuery` (`Load`, `LoadMany`, `Query`).
+Session (`IQuerySession, IDocumentSession`) is used as a method argument within an iteration (`while`, `do-while`, `foreach`, `for`).
 
 ## Reason for rule
 
-Queries within an iteration can indicate *Select N+1 issues* (see, [What is N+1 SELECT query issue?](https://stackoverflow.com/questions/97197/what-is-n1-select-query-issue)). This rule aids in locating such sites, supporting manual code review of violations.
+Using session as a method argument within an iteration can indicate *Select N+1 issues* (see, [What is N+1 SELECT query issue?](https://stackoverflow.com/questions/97197/what-is-n1-select-query-issue)). This rule aids in locating such sites, supporting manual code review of violations.
 
 ## How to fix violations
 
@@ -30,7 +29,7 @@ var issues = session.Query<Issue>();
 // Each issue generates an additional query
 foreach (var i in issues)
 {
-	var user = session.Load<User>(i.AssigneeId.Value);
+	var user = LoadUser(i.AssigneeId.Value);
 	dict.Add(user.Id, user);
 }
 ```

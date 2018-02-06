@@ -3,7 +3,7 @@ layout: default
 ---
 
 <div class="uk-card uk-card-body">    
-<h3>Rules</h3>
+<h3>Available Analyzers</h3>
 
 <hr class="uk-divider-icon">
 
