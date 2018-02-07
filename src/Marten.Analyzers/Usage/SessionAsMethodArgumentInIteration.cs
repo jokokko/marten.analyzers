@@ -42,8 +42,13 @@ namespace Marten.Analyzers.Usage
 		    // ReSharper disable once InvertIf
 		    if (ancestors)
 		    {
-		        var args = invocationExpressionSyntax.ArgumentList.Arguments.Select(x => context.SemanticModel.GetTypeInfo(x.Expression))
+		        var args = invocationExpressionSyntax.ArgumentList.Arguments.Select(x => context.SemanticModel.GetTypeInfo(x.Expression, context.CancellationToken))
 		            .ToArray();
+
+			    if (context.CancellationToken.IsCancellationRequested)
+			    {
+				    return;
+			    }
 
 		        if (!args.Any(x => OnParameters.Any(y => y.Equals(x.Type.ToDisplayString(), StringComparison.Ordinal))))
 		        {

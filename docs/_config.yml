@@ -11,4 +11,7 @@ defaults:
       layout: rule
 baseurl: /marten.analyzers
 repository: jokokko/marten.analyzers
+author: Joona-Pekka Kokko
 exclude: ["Gemfile*"]
+plugins:  
+  - jekyll-seo-tag

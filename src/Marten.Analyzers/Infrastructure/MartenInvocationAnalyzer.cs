@@ -6,14 +6,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Marten.Analyzers.Infrastructure
-{    
-    public abstract class MartenInvocationAnalyzer : MartenAnalyzer
+{
+	public abstract class MartenInvocationAnalyzer : MartenAnalyzer
     {
-        private readonly HashSet<string> onMethods;
+	    protected readonly HashSet<string> OnMethods;
 
         protected MartenInvocationAnalyzer(params string[] methods)
         {
-            onMethods = new HashSet<string>(methods, StringComparer.Ordinal);
+            OnMethods = new HashSet<string>(methods, StringComparer.Ordinal);
         }
 
         protected override void AnalyzeCompilation(CompilationStartAnalysisContext ctx, MartenContext martenCtx)
@@ -30,7 +30,7 @@ namespace Marten.Analyzers.Infrastructure
 
                 var methodSymbol = (IMethodSymbol) symbol.Symbol;
 
-                if (onMethods.Contains($"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}"))
+                if (OnMethods.Contains($"{methodSymbol.ContainingType.Name}.{methodSymbol.Name}"))
                 {
                     Analyze(context, none, methodSymbol);
                 }

@@ -5,9 +5,9 @@ Code Analyzers for [Marten](http://jasperfx.github.io/marten/).
 
 For rules, see https://jokokko.github.io/marten.analyzers/.
 
-Remarks: The current analyzers exist to identify Select N+1 candidates to aid myself in code reviews.
+Remarks: The current analyzers exist to identify Select N+1 candidates as well as candidates for SQL injections to aid myself in code reviews.
 
-![Warning on a SELECT N+1 issue candidate](assets/selectn1sample.png)
+![Warnings on candidates for SELECT N+1 issues and SQL injections](assets/selectn1sample.png)
 
 Note: This is a contributor project.
 
