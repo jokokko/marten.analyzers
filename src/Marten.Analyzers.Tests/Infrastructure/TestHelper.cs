@@ -86,7 +86,11 @@ namespace Marten.Analyzers.Tests.Infrastructure
 			var referencedAssemblies = typeof(TestHelper).Assembly.GetReferencedAssemblies()
 				.Concat(typeof(SelectNPlus1Candidate).Assembly.GetReferencedAssemblies())
 				.Concat(typeof(IDocumentStore).Assembly.GetReferencedAssemblies())
-				.Concat(new[] { typeof(IsolationLevel).Assembly.GetName(), typeof(object).Assembly.GetName() });
+				.Concat(new[]
+			    {
+			        typeof(IsolationLevel).Assembly.GetName(), typeof(object).Assembly.GetName(), typeof(IQueryable<>).Assembly.GetName(),
+			        typeof(List<>).Assembly.GetName()
+                });
 
 			var refs = referencedAssemblies.Select(x => (MetadataReference)MetadataReference.CreateFromFile(Assembly.Load(x.Name).Location));
 

@@ -10,9 +10,10 @@ namespace Marten.Analyzers
             return new DiagnosticDescriptor(id, title, messageFormat, category.Name, defaultSeverity, true, description, $"https://jokokko.github.io/marten.analyzers/rules/{id}");
         }
 
-	    internal static readonly DiagnosticDescriptor Marten1000SelectNPlus1Candidate = Rule("Marten1000", "Session queried within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session queried within an iteration");
-	    internal static readonly DiagnosticDescriptor Marten1001EventStoreSelectNPlus1Candidate = Rule("Marten1001", "Event store queried within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Event store queried within an iteration");
-        internal static readonly DiagnosticDescriptor Marten1002SessionAsMethodArgumentInIteration = Rule("Marten1002", "Session used as a method argument within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session used as a method argument within an iteration");
-	    internal static readonly DiagnosticDescriptor Marten1003SqlInjection = Rule("Marten1003", "Possible site for SQL injection", RuleCategory.Usage, DiagnosticSeverity.Warning, "Possible site for SQL injection");
-	}
+        internal static readonly DiagnosticDescriptor Marten1000SelectNPlus1Candidate = Rule("Marten1000", "Session queried within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session queried within an iteration with '{0}'.");
+        internal static readonly DiagnosticDescriptor Marten1001EventStoreSelectNPlus1Candidate = Rule("Marten1001", "Event store queried within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Event store queried within an iteration with '{0}'.");
+        internal static readonly DiagnosticDescriptor Marten1002SessionAsMethodArgumentInIteration = Rule("Marten1002", "Session used as a method argument within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session used as a method argument within an iteration in '{0}'.");
+        internal static readonly DiagnosticDescriptor Marten1003SqlInjection = Rule("Marten1003", "Possible site for SQL injection", RuleCategory.Usage, DiagnosticSeverity.Warning, "Possible site for SQL injection in '{0}'.");
+        internal static readonly DiagnosticDescriptor Marten1004PrematureMaterialization = Rule("Marten1004", "Possible premature query materialization", RuleCategory.Usage, DiagnosticSeverity.Warning, "Possible premature query materialization in '{0}'.");
+    }
 }
