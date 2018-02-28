@@ -11,7 +11,7 @@ namespace Marten.Analyzers.Tests.Usage
         private readonly DiagnosticAnalyzer analyzer = new PrematureMaterializationAnalyzer();
 
         [Fact]
-        public async void CanIdentifyQueriesWithinIterations()
+        public async void CanIdentifyPrematureMaterialization()
         {
             var diagnostics = await TestHelper.GetDiagnosticsAsync(analyzer,
                 @"using System;

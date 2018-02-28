@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Marten.Analyzers.Tests.Usage
 {
-	public sealed class SessionAsMethodParameterInIterationTests
+	public sealed class SessionAsMethodArgumentInIterationTests
 	{
 		private readonly DiagnosticAnalyzer analyzer = new SessionAsMethodArgumentInIteration();
 

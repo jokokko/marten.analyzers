@@ -59,14 +59,11 @@ namespace Marten.Analyzers.Usage
 			}) != 0x3 || context.CancellationToken.IsCancellationRequested)
 			{
 				return;
-			}			
-			
-			var builder = ImmutableDictionary.CreateBuilder<string, string>();
-			builder["MethodName"] = methodSymbol.Name;
+			}					
 
 			context.ReportDiagnostic(Diagnostic.Create(
 				SupportedDiagnostics[0],
-				invocationExpressionSyntax.GetLocation(), builder.ToImmutable(), SymbolDisplay.ToDisplayString(methodSymbol,
+				invocationExpressionSyntax.GetLocation(), SymbolDisplay.ToDisplayString(methodSymbol,
 					SymbolDisplayFormat.CSharpShortErrorMessageFormat.WithParameterOptions(
 						SymbolDisplayParameterOptions.None))));
 
