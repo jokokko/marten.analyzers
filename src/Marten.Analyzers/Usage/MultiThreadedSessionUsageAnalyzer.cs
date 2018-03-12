@@ -25,6 +25,7 @@ namespace Marten.Analyzers.Usage
 		{
 			public ISymbol Symbol;
 			public MemberAccessExpressionSyntax MemberAccess;
+			public ISymbol Accessed;
 		}
 
 		protected override void Analyze(SyntaxNodeAnalysisContext context,
@@ -42,7 +43,7 @@ namespace Marten.Analyzers.Usage
 				var accessed = context.SemanticModel.GetSymbolInfo(syntax.Expression).Symbol;
 				if (symbol.Symbol != null && symbol.Symbol.ContainingType.ToDisplayString().Equals("Marten.IQuerySession", StringComparison.Ordinal) && (accessed == null || !vars.Contains(accessed)))
 				{					
-					list.Add(new AccessAndSymbol { Symbol = symbol.Symbol, MemberAccess = syntax});
+					list.Add(new AccessAndSymbol { Symbol = symbol.Symbol, MemberAccess = syntax, Accessed = accessed});
 				}
 
 				return list;
@@ -57,7 +58,7 @@ namespace Marten.Analyzers.Usage
 
 				context.ReportDiagnostic(Diagnostic.Create(
 					SupportedDiagnostics[0],
-					sa.MemberAccess.GetLocation(), SymbolDisplay.ToDisplayString(sa.Symbol,
+					sa.MemberAccess.GetLocation(), SymbolDisplay.ToDisplayString(sa.Accessed,
 						SymbolDisplayFormat.CSharpShortErrorMessageFormat.WithParameterOptions(
 							SymbolDisplayParameterOptions.None))));
 			}			
