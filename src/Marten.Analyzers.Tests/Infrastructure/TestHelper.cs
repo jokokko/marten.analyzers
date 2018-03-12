@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
@@ -89,8 +90,8 @@ namespace Marten.Analyzers.Tests.Infrastructure
 				.Concat(new[]
 			    {
 			        typeof(IsolationLevel).Assembly.GetName(), typeof(object).Assembly.GetName(), typeof(IQueryable<>).Assembly.GetName(),
-			        typeof(List<>).Assembly.GetName()
-                });
+			        typeof(List<>).Assembly.GetName(), typeof(Parallel).Assembly.GetName(), typeof(Partitioner<>).Assembly.GetName()
+				});
 
 			var refs = referencedAssemblies.Select(x => (MetadataReference)MetadataReference.CreateFromFile(Assembly.Load(x.Name).Location));
 

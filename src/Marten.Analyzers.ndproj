@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<NDepend AppName="Marten.Analyzers" Platform="DotNet" FileWrittenByProductVersion="2017.3.2.9010">
+<NDepend AppName="Marten.Analyzers" Platform="DotNet" FileWrittenByProductVersion="2018.1.0.9030">
   <OutputDir KeepXmlFiles="False">..\artifacts\NDependOut</OutputDir>
   <Assemblies>
     <Name>Marten.Analyzers</Name>

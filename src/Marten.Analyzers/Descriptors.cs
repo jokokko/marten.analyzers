@@ -16,5 +16,7 @@ namespace Marten.Analyzers
         internal static readonly DiagnosticDescriptor Marten1003SqlInjection = Rule("Marten1003", "Possible site for SQL injection", RuleCategory.Usage, DiagnosticSeverity.Warning, "Possible site for SQL injection in '{0}'.");
         internal static readonly DiagnosticDescriptor Marten1004PrematureMaterialization = Rule("Marten1004", "Possible premature query materialization", RuleCategory.Usage, DiagnosticSeverity.Warning, "Possible premature query materialization in '{0}'.");
         internal static readonly DiagnosticDescriptor Marten1005UseBatchedQuery = Rule("Marten1005", "Consider using batched query", RuleCategory.Usage, DiagnosticSeverity.Info, "Consider enlisting query in batched query of '{0}'.");
+        internal static readonly DiagnosticDescriptor Marten1006MultithreadedSessionAccess = Rule("Marten1006", "Session accessed in possibly multithreaded context", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session '{0}' accessed in possibly multithreaded context.");
+        internal static readonly DiagnosticDescriptor Marten1007TaskClosesOverSession = Rule("Marten1007", "Tasks closes over session", RuleCategory.Usage, DiagnosticSeverity.Warning, "Task closes over session '{0}'.");
     }
 }
