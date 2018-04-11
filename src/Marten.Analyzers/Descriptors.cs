@@ -18,5 +18,6 @@ namespace Marten.Analyzers
         internal static readonly DiagnosticDescriptor Marten1005UseBatchedQuery = Rule("Marten1005", "Consider using batched query", RuleCategory.Usage, DiagnosticSeverity.Info, "Consider enlisting query in batched query of '{0}'.");
         internal static readonly DiagnosticDescriptor Marten1006MultithreadedSessionAccess = Rule("Marten1006", "Session accessed in possibly multithreaded context", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session '{0}' accessed in possibly multithreaded context.");
         internal static readonly DiagnosticDescriptor Marten1007TaskClosesOverSession = Rule("Marten1007", "Tasks closes over session", RuleCategory.Usage, DiagnosticSeverity.Warning, "Task closes over session '{0}'.");
-    }
+	    internal static readonly DiagnosticDescriptor Marten1008ProjectionAsSyncAndAsync = Rule("Marten1008", "Projection wired as synchronous and asynchronous", RuleCategory.Usage, DiagnosticSeverity.Warning, "Projection '{0}' wired as synchronous and asynchronous.");
+	}
 }
