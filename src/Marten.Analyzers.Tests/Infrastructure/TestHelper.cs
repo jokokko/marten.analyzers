@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
+using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Marten.Analyzers.Usage;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -84,18 +81,13 @@ namespace Marten.Analyzers.Tests.Infrastructure
 		private static readonly IEnumerable<MetadataReference> SystemReferences;
 		static TestHelper()
 		{
-			var referencedAssemblies = typeof(TestHelper).Assembly.GetReferencedAssemblies()
-				.Concat(typeof(SelectNPlus1Candidate).Assembly.GetReferencedAssemblies())
-				.Concat(typeof(IDocumentStore).Assembly.GetReferencedAssemblies())
-				.Concat(new[]
-			    {
-			        typeof(IsolationLevel).Assembly.GetName(), typeof(object).Assembly.GetName(), typeof(IQueryable<>).Assembly.GetName(),
-			        typeof(List<>).Assembly.GetName(), typeof(Parallel).Assembly.GetName(), typeof(Partitioner<>).Assembly.GetName()
-				});
+			// All the test host resolves: the framework, Marten and its dependencies
+			var trustedPlatformAssemblies = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES");
 
-			var refs = referencedAssemblies.Select(x => (MetadataReference)MetadataReference.CreateFromFile(Assembly.Load(x.Name).Location));
-
-			SystemReferences = refs;
+			SystemReferences = trustedPlatformAssemblies
+				.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries)
+				.Select(x => (MetadataReference)MetadataReference.CreateFromFile(x))
+				.ToArray();
 		}
 	}
 }

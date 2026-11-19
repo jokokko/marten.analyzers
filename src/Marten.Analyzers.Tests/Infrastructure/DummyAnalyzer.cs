@@ -12,7 +12,7 @@ namespace Marten.Analyzers.Tests.Infrastructure
     {
         private readonly Action<SyntaxNodeAnalysisContext> onAnalysis;
 
-        public DummyAnalyzer(Action<SyntaxNodeAnalysisContext> onAnalysis) : base ("IQuerySession.Load")
+        public DummyAnalyzer(Action<SyntaxNodeAnalysisContext> onAnalysis) : base ("IQuerySession.LoadAsync")
         {
             this.onAnalysis = onAnalysis;
         }

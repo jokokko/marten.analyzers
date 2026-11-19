@@ -31,12 +31,18 @@ namespace Marten.Analyzers.Infrastructure
 
 				var methodSymbol = (IMethodSymbol) symbol.Symbol;			   
                 
-                if (methodSymbol.Parameters.Any(x => OnParameters.Any(t => t.Equals(x.ToDisplayString(), StringComparison.Ordinal))))
+                if (methodSymbol.Parameters.Any(x => Matches(x.Type)))
                 {
 					Analyze(context, node, methodSymbol);
 				}
 			}, SyntaxKind.InvocationExpression);
 		}
+
+		protected virtual bool Matches(ITypeSymbol type)
+		{
+			return OnParameters.Contains(type.ToQualifiedName());
+		}
+
 		protected abstract void Analyze(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpressionSyntax, IMethodSymbol methodSymbol);
 	}
 }

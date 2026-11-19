@@ -1,11 +1,12 @@
-﻿using Xunit;
+﻿using System.Threading.Tasks;
+using Xunit;
 
 namespace Marten.Analyzers.Tests.Infrastructure
 {
     public sealed class MartenInvocationAnalyzerTests
     {
         [Fact]
-        public async void CodeNotUsingMartenShouldNotGetAnalyzed()
+        public async Task CodeNotUsingMartenShouldNotGetAnalyzed()
         {
             object ctx = null;
             var analyzer = new DummyAnalyzer(context => ctx = context);

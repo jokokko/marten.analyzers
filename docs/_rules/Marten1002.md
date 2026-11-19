@@ -7,7 +7,9 @@ severity: Warning
 
 ## Cause
 
-Session (`IQuerySession, IDocumentSession`) is used as a method argument within an iteration (`while`, `do-while`, `foreach`, `for`).
+Session is used as a method argument within an iteration (`while`, `do-while`, `foreach`, `await foreach`, `for`). A session is `IQuerySession`, anything deriving from it (`IDocumentSession`, `IDocumentOperations`, `session.ForTenant(...)`) or `IDocumentReadOperations`.
+
+Not reported: an argument of what provides the items iterated (`foreach (var id in await LoadIds(session))`).
 
 ## Reason for rule
 
@@ -15,7 +17,7 @@ Using session as a method argument within an iteration can indicate *Select N+1 
 
 ## How to fix violations
 
-To fix a violation of this rule, [joins](http://jasperfx.github.io/marten/documentation/documents/querying/include/) can be used to load related data. Otherwise remodeling relations in a more document-oriented fashion might be considered.
+To fix a violation of this rule, [joins](https://martendb.io/documents/querying/linq/include.html) can be used to load related data. Otherwise remodeling relations in a more document-oriented fashion might be considered.
 
 ## Examples
 
@@ -24,12 +26,12 @@ To fix a violation of this rule, [joins](http://jasperfx.github.io/marten/docume
 ```csharp
 var dict = new Dictionary<Guid, User>();
 
-var issues = session.Query<Issue>();
+var issues = await session.Query<Issue>().Where(x => x.AssigneeId != null).ToListAsync();
 
 // Each issue generates an additional query
 foreach (var i in issues)
 {
-	var user = LoadUser(i.AssigneeId.Value);
+	var user = await LoadUser(session, i.AssigneeId.Value);
 	dict.Add(user.Id, user);
 }
 ```
@@ -40,5 +42,5 @@ foreach (var i in issues)
 // Issues with assignees are fetched in one round-trip.
 var dict = new Dictionary<Guid, User>();
 
-session.Query<Issue>().Include(x => x.AssigneeId, dict).ToArray();
+await session.Query<Issue>().Include(x => x.AssigneeId, dict).Where(x => x.AssigneeId != null).ToListAsync();
 ```

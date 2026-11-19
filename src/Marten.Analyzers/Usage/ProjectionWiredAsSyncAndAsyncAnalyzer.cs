@@ -27,12 +27,31 @@ namespace Marten.Analyzers.Usage
 		{
 			private readonly ProjectionWiredAsSyncAndAsyncAnalyzer host;
 
-			public HashSet<string> OnMethods => new HashSet<string>(new[]
+			// Registrations taking a lifecycle
+			public HashSet<string> OnMethods { get; } = new HashSet<string>(new[]
 			{
-				"ProjectionCollection.AggregateStreamsWith",
-				"ProjectionCollection.Add"
+				// StoreOptions.Projections
+				"ProjectionGraph.Add",
+				"ProjectionGraph.Register",
+				"ProjectionOptions.Snapshot",
+				"ProjectionOptions.AddGlobalProjection",
+				// IServiceCollection, AddMarten(), AddMartenStore<T>()
+				"MartenServiceCollectionExtensions.AddProjectionWithServices",
+				"MartenConfigurationExpression.AddProjectionWithServices",
+				"MartenStoreExpression.AddProjectionWithServices",
+				// MyProjection.Register<MyProjection>(services, lifecycle, ...)
+				"SingleStreamProjection.Register",
+				"MultiStreamProjection.Register",
+				"EventProjection.Register"
 			});
-			
+
+			private const string LifecycleParameter = "lifecycle";
+			private const string Inline = "Inline";
+			private const string Async = "Async";
+
+			// Parameters of a registration that take the projection as an instance
+			private static readonly string[] ProjectionParameters = { "projection", "source" };
+
 			public void Analyze(SyntaxNodeAnalysisContext context)
 			{
 
@@ -67,60 +86,94 @@ namespace Marten.Analyzers.Usage
 
 			private void AnalyzeInvocation(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax node, IMethodSymbol method)
 			{
-				var memberAccess = node.DescendantNodes().OfType<MemberAccessExpressionSyntax>().FirstOrDefault();
+				ConcurrentBag<ProjectionCtx> collection;
 
-				if (memberAccess == null)
+				switch (Lifecycle(context, node, method))
 				{
-					return;
+					case Inline:
+						collection = syncProjections;
+						break;
+					case Async:
+						collection = asyncProjections;
+						break;
+					// Live projections, or a lifecycle not known at compile time
+					default:
+						return;
 				}
 
-				var member = context.SemanticModel.GetSymbolInfo(memberAccess.Expression);
+				ITypeSymbol t;
 
-				if (member.Symbol == null)
+				var projection = method.Parameters.FirstOrDefault(x => ProjectionParameters.Contains(x.Name, StringComparer.Ordinal));
+
+				if (projection != null)
 				{
-					return;
+					var p = node.ArgumentFor(projection);
+
+					t = p == null ? null : context.SemanticModel.GetTypeInfo(p.Expression, context.CancellationToken).Type;
+
+					// Unrelated projections share the abstraction they are passed as
+					if (t != null && (t.TypeKind == TypeKind.Interface || t.IsAbstract))
+					{
+						return;
+					}
+				}
+				else
+				{
+					t = method.TypeArguments.FirstOrDefault();
 				}
 
-				var collection = member.Symbol.Name.Equals("AsyncProjections") ? asyncProjections : syncProjections;
-
-			    ITypeSymbol t = null;
-
-			    if (method.Name.Equals("AggregateStreamsWith", StringComparison.Ordinal))
-			    {
-			        t = method.TypeArguments.FirstOrDefault();
-			    }
-			    else if (method.Name.Equals("Add", StringComparison.Ordinal))
-			    {
-			        var p = node.ArgumentList.Arguments.FirstOrDefault();
-			        t = context.SemanticModel.GetTypeInfo(p.Expression).Type;
-			    }
-
-			    // ReSharper disable once InvertIf
-			    if (t != null)
-			    {
-			        var ctx = new ProjectionCtx
-			        {
-                        Type = t,
-                        Invocation = node
-			        };
+				// ReSharper disable once InvertIf
+				if (t != null && t.TypeKind != TypeKind.Error)
+				{
+					var ctx = new ProjectionCtx
+					{
+						Type = t,
+						Invocation = node
+					};
 
 					collection.Add(ctx);
 				}
 			}
 
-			public void End(CompilationAnalysisContext context)
-			{				
-				//var items = syncProjections.Intersect(asyncProjections, new ProjectionCtxComparer());
+			// Name of the enum member passed as the lifecycle of the projection
+			private static string Lifecycle(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax node, IMethodSymbol method)
+			{
+				var parameter = method.Parameters.FirstOrDefault(x => x.Name.Equals(LifecycleParameter, StringComparison.Ordinal) && x.Type.TypeKind == TypeKind.Enum);
 
+				if (parameter == null)
+				{
+					return null;
+				}
+
+				var argument = node.ArgumentFor(parameter);
+
+				if (argument == null)
+				{
+					return null;
+				}
+
+				var value = context.SemanticModel.GetConstantValue(argument.Expression, context.CancellationToken);
+
+				if (!value.HasValue)
+				{
+					return null;
+				}
+
+				return parameter.Type.GetMembers().OfType<IFieldSymbol>()
+					.FirstOrDefault(x => x.HasConstantValue && Equals(x.ConstantValue, value.Value))?.Name;
+			}
+
+			public void End(CompilationAnalysisContext context)
+			{
 				var items = from s in syncProjections
 					from a in asyncProjections
-					where s.Type.Equals(a.Type)
-					select new {s, a};
+					where SymbolEqualityComparer.Default.Equals(s.Type, a.Type)
+					from i in new[] { s, a }
+					select i;
 
-				foreach (var i in items)
+				foreach (var i in items.Distinct())
 				{
-					Report(context, i.s.Invocation, i.s.Type);
-					Report(context, i.a.Invocation, i.a.Type);
+					Report(context, i.Invocation, i.Type);
 				}
 			}
 

@@ -7,7 +7,9 @@ severity: Warning
 
 ## Cause
 
-Document session (`Marten.IDocumentSession`) is accessed in possibly multithreaded context (`Parallel.ForEach`, `ThreadPool.QueueUserWorkItem` capture session).
+A session (`Marten.IQuerySession` or anything deriving from it) held in a variable, a parameter, a field or a property is accessed in possibly multithreaded context: by a delegate passed to `Parallel.ForEach`, `Parallel.ForEachAsync` or `ThreadPool.QueueUserWorkItem`. Any access counts, e.g. `LoadAsync`, `Store`, `Events`.
+
+Not reported: a session opened by the delegate, or one providing the items iterated (`Parallel.ForEach(await session.LoadManyAsync<Issue>(ids), ...)`).
 
 ## Reason for rule
 
@@ -22,18 +24,18 @@ Construct sessions per consuming site.
 ### Violates
 
 ```csharp
-ThreadPool.QueueUserWorkItem(_ => {
-    var issues = session.LoadMany<Issue>("Issue-1", "Issue-2");
-})
+await Parallel.ForEachAsync(issueIds, async (id, token) => {
+    var issue = await session.LoadAsync<Issue>(id, token);
+});
 ```
 
 ### Does not violate
 
 ```csharp
-ThreadPool.QueueUserWorkItem(_ => {
-    using (var session = store.OpenSession())
+await Parallel.ForEachAsync(issueIds, async (id, token) => {
+    await using (var session = store.LightweightSession())
     {
-        var issues = session.LoadMany<Issue>("Issue-1", "Issue-2");
+        var issue = await session.LoadAsync<Issue>(id, token);
     }
 });
 ```

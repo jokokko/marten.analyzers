@@ -15,14 +15,16 @@ namespace Marten.Analyzers.Usage
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(Descriptors.Marten1005UseBatchedQuery);
 
-        public HashSet<string> OnMethods => new HashSet<string>(new[]
+        public HashSet<string> OnMethods { get; } = new HashSet<string>(new[]
         {
-            "IQuerySession.Load",
             "IQuerySession.LoadAsync",
-            "IQuerySession.LoadMany",
             "IQuerySession.LoadManyAsync",
             "IQuerySession.Query",
-            "IQuerySession.QueryAsync"
+            "IQuerySession.QueryAsync",
+            // Overloads declared in JasperFx.Events, e.g. LoadManyAsync(ids, token)
+            "IDocumentReadOperations.LoadAsync",
+            "IDocumentReadOperations.LoadManyAsync",
+            "IDocumentReadOperations.Query"
         });
 
         private static readonly string[] EvaluateFollowingInvocationsOn = {
@@ -49,7 +51,7 @@ namespace Marten.Analyzers.Usage
             var invocationsPerSession = context.CodeBlock.DescendantNodes()
                 .OfType<InvocationExpressionSyntax>()
                 .TakeWhile(_ => !context.CancellationToken.IsCancellationRequested)
-                .Aggregate(new Dictionary<ISymbol, List<InvocationsInSession>>(),
+                .Aggregate(new Dictionary<ISymbol, List<InvocationsInSession>>(SymbolEqualityComparer.Default),
                     (agrCtx, invocation) =>
                     {
                         var semanticModel = context.SemanticModel;
@@ -66,26 +68,28 @@ namespace Marten.Analyzers.Usage
                             return agrCtx;
                         }
 
-                        var variableDeclaration = invocation.FirstAncestorOrSelf<VariableDeclarationSyntax>();
-
+                        // The nearest declaration or assignment: either can be nested in the other
                         ISymbol assignmentSym = null;
-                        if (variableDeclaration != null && variableDeclaration.Variables.Count > 0)
-                        {
-                            assignmentSym = context.SemanticModel.GetDeclaredSymbol(variableDeclaration.Variables[0], context.CancellationToken);
-                        }
-                        else
-                        {
-                            var assignment = invocation.FirstAncestorOrSelf<AssignmentExpressionSyntax>();
 
-                            if (assignment != null)
-                            {
+                        switch (invocation.Ancestors().FirstOrDefault(x => x is VariableDeclarationSyntax || x is AssignmentExpressionSyntax))
+                        {
+                            case VariableDeclarationSyntax variableDeclaration when variableDeclaration.Variables.Count > 0:
+                                assignmentSym = context.SemanticModel.GetDeclaredSymbol(variableDeclaration.Variables[0], context.CancellationToken);
+                                break;
+                            case AssignmentExpressionSyntax assignment:
                                 assignmentSym = context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol;
-                            }
+                                break;
                         }
 
                         if (assignmentSym != null && invocation.Expression is MemberAccessExpressionSyntax memberAccess)
                         {
                             var accessSym = context.SemanticModel.GetSymbolInfo(memberAccess.Expression, context.CancellationToken);
+
+                            // E.g. (await OpenSessionAsync()).LoadAsync<T>(id)
+                            if (accessSym.Symbol == null)
+                            {
+                                return agrCtx;
+                            }
 
                             // ReSharper disable once AccessToModifiedClosure
                             var readInside = invocation.ArgumentList.Arguments
@@ -102,7 +106,15 @@ namespace Marten.Analyzers.Usage
                                     .Where(x => x.Succeeded).SelectMany(x => x.ReadInside))).ToArray();
                             }
 
-                            // https://github.com/dotnet/roslyn/issues/3394                            
+                            // Declared in another file (primary constructor of a partial type): not of this semantic model
+                            IEnumerable<SyntaxNode> Declarations(ISymbol declared)
+                            {
+                                return declared.DeclaringSyntaxReferences
+                                    .Where(x => x.SyntaxTree == context.SemanticModel.SyntaxTree)
+                                    .Select(x => x.GetSyntax(context.CancellationToken));
+                            }
+
+                            // https://github.com/dotnet/roslyn/issues/3394
                             // Elementary...
                             IEnumerable<ISymbol> Get(SyntaxNode node)
                             {
@@ -132,8 +144,8 @@ namespace Marten.Analyzers.Usage
                                 while (toTraverse.Any() && !context.CancellationToken.IsCancellationRequested)
                                 {
                                     var item = toTraverse.Dequeue();
-                                    var items = item.DeclaringSyntaxReferences.SelectMany(x => Filter(x.GetSyntax(context.CancellationToken))).ToArray();
-                                    var toAnalyze = items.Except(refChain).ToArray();
+                                    var items = Declarations(item).SelectMany(Filter).ToArray();
+                                    var toAnalyze = items.Except(refChain, SymbolEqualityComparer.Default).ToArray();
                                     refChain.AddRange(toAnalyze);
                                     foreach (var t in toAnalyze)
                                     {
@@ -146,7 +158,7 @@ namespace Marten.Analyzers.Usage
 
                             var dependentSymbols = new List<ISymbol>(readInside);
 
-                            var declaringReferences = readInside.SelectMany(s => s.DeclaringSyntaxReferences.SelectMany(x => Get(x.GetSyntax())));
+                            var declaringReferences = readInside.SelectMany(s => Declarations(s).SelectMany(Get));
                             dependentSymbols.AddRange(declaringReferences);
 
                             if (!agrCtx.TryGetValue(accessSym.Symbol, out var list))
@@ -170,7 +182,7 @@ namespace Marten.Analyzers.Usage
             {
                 var toDiagnostic = invocations.Value.Aggregate(new List<InvocationsInSession>(), (list, invocation) =>
                 {
-                    if (!invocation.ReadInside.Any(x => invocations.Value.Except(new[] { invocation }).Any(s => s.Assignment.Equals(x))))
+                    if (!invocation.ReadInside.Any(x => invocations.Value.Except(new[] { invocation }).Any(s => SymbolEqualityComparer.Default.Equals(s.Assignment, x))))
                     {
                         list.Add(invocation);
                     }

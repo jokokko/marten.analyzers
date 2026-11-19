@@ -5,9 +5,9 @@ namespace Marten.Analyzers
 {
     internal static class Descriptors
     {
-        private static DiagnosticDescriptor Rule(string id, string title, RuleCategory category, DiagnosticSeverity defaultSeverity, string messageFormat, string description = null)
+        private static DiagnosticDescriptor Rule(string id, string title, RuleCategory category, DiagnosticSeverity defaultSeverity, string messageFormat, string description = null, params string[] customTags)
         {            
-            return new DiagnosticDescriptor(id, title, messageFormat, category.Name, defaultSeverity, true, description, $"https://jokokko.github.io/marten.analyzers/rules/{id}");
+            return new DiagnosticDescriptor(id, title, messageFormat, category.Name, defaultSeverity, true, description, $"https://jokokko.github.io/marten.analyzers/rules/{id}", customTags);
         }
 
         internal static readonly DiagnosticDescriptor Marten1000SelectNPlus1Candidate = Rule("Marten1000", "Session queried within an iteration", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session queried within an iteration with '{0}'.");
@@ -18,6 +18,6 @@ namespace Marten.Analyzers
         internal static readonly DiagnosticDescriptor Marten1005UseBatchedQuery = Rule("Marten1005", "Consider using batched query", RuleCategory.Usage, DiagnosticSeverity.Info, "Consider enlisting query in batched query of '{0}'.");
         internal static readonly DiagnosticDescriptor Marten1006MultithreadedSessionAccess = Rule("Marten1006", "Session accessed in possibly multithreaded context", RuleCategory.Usage, DiagnosticSeverity.Warning, "Session '{0}' accessed in possibly multithreaded context.");
         internal static readonly DiagnosticDescriptor Marten1007TaskClosesOverSession = Rule("Marten1007", "Tasks closes over session", RuleCategory.Usage, DiagnosticSeverity.Warning, "Task closes over session '{0}'.");
-	    internal static readonly DiagnosticDescriptor Marten1008ProjectionAsSyncAndAsync = Rule("Marten1008", "Projection wired as synchronous and asynchronous", RuleCategory.Usage, DiagnosticSeverity.Warning, "Projection '{0}' wired as synchronous and asynchronous.");
+	    internal static readonly DiagnosticDescriptor Marten1008ProjectionAsSyncAndAsync = Rule("Marten1008", "Projection wired as synchronous and asynchronous", RuleCategory.Usage, DiagnosticSeverity.Warning, "Projection '{0}' wired as synchronous and asynchronous.", customTags: WellKnownDiagnosticTags.CompilationEnd);
 	}
 }

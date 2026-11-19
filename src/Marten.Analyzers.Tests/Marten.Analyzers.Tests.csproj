@@ -1,24 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!-- DummyAnalyzer is a test double, not an analyzer assembly -->
+    <NoWarn>$(NoWarn);RS1036;RS1038;RS1041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Marten" Version="2.5.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.6.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Marten" Version="9.62.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Marten.Analyzers\Marten.Analyzers.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis">      
-    </Reference>
   </ItemGroup>
 
 </Project>

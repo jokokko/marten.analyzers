@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using Marten.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -16,28 +15,21 @@ namespace Marten.Analyzers.Usage
 			ImmutableArray.Create(Descriptors.Marten1002SessionAsMethodArgumentInIteration);
 
 		public SessionAsMethodArgumentInIteration() : base(
-            "Marten.IQuerySession",
-		    "Marten.IDocumentSession")
+			// What a session is passed as to read documents
+			"JasperFx.Events.Documents.IDocumentReadOperations")
 		{
+		}
+
+		protected override bool Matches(ITypeSymbol type)
+		{
+			return type.IsSession() || base.Matches(type);
 		}
 
 		protected override void Analyze(SyntaxNodeAnalysisContext context,
 			InvocationExpressionSyntax invocationExpressionSyntax,
 			IMethodSymbol methodSymbol)
 		{
-		    var ancestors = invocationExpressionSyntax.Ancestors().Any(x =>
-		    {
-		        switch (x)
-		        {
-		            case ForEachStatementSyntax _:
-		            case ForStatementSyntax _:
-		            case WhileStatementSyntax _:
-		            case DoStatementSyntax _:
-		                return true;
-		        }
-
-		        return false;
-		    });
+		    var ancestors = invocationExpressionSyntax.IsWithinIteration();
 
 		    // ReSharper disable once InvertIf
 		    if (ancestors)
@@ -50,7 +42,8 @@ namespace Marten.Analyzers.Usage
 				    return;
 			    }
 
-		        if (!args.Any(x => OnParameters.Any(y => y.Equals(x.Type.ToDisplayString(), StringComparison.Ordinal))))
+		        // null and default have no type
+		        if (!args.Any(x => x.Type != null && Matches(x.Type)))
 		        {
 		            return;
 		        }

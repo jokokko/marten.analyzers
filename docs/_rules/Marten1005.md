@@ -7,7 +7,7 @@ severity: Info
 
 ## Cause
 
-Multiple queries (`Load`, `LoadAsync`, `LoadMany`, `LoadManyAsync`, `Query`, `QueryAsync` of `IQuerySession`) within a method body or expression load data with no interdependencies between the materialized data and query parameters.
+Multiple queries (`LoadAsync`, `LoadManyAsync`, `Query`, `QueryAsync` of `IQuerySession`) within a method body or expression load data with no interdependencies between the materialized data and query parameters.
 
 ## Reason for rule
 
@@ -15,7 +15,7 @@ Queries with no interdependent data can be batched to reduce roundtrips to datab
 
 ## How to fix violations
 
-Enlist the quries in `IBatchedQuery`.
+Enlist the queries in `IBatchedQuery`. See [Batched Queries](https://martendb.io/documents/querying/batched-queries.html) for more.
 
 ## Examples
 
@@ -23,8 +23,8 @@ Enlist the quries in `IBatchedQuery`.
 
 ```csharp
 // Two roundtrips to database
-var issues = session.LoadMany<Issue>("Issue-1", "Issue-2");
-var assignee = session.Load<Assignee>("Assignee");
+var issues = await session.LoadManyAsync<Issue>("Issue-1", "Issue-2");
+var assignee = await session.LoadAsync<Assignee>("Assignee");
 ```
 
 ### Does not violate
@@ -36,5 +36,5 @@ var issues = batch.LoadMany<Issue>().ById("Issue-1", "Issue-2");
 var assignee = batch.Load<Assignee>("Assignee");
 
 // Single roundtrip to database
-batch.Execute();
+await batch.Execute();
 ```

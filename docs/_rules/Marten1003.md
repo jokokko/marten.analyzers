@@ -7,7 +7,9 @@ severity: Warning
 
 ## Cause
 
-String concatenation is used to build a SQL query (`IQuerySession.Query`, `IQuerySession.QueryAsync`, `IBatchedQuery.Query`).
+String concatenation, string interpolation or `string.Format` is used to build SQL (`IQuerySession.QueryAsync`, `IQuerySession.StreamJson`, `IAdvancedSql.QueryAsync`, `IAdvancedSql.StreamAsync`, `IBatchedQuery.Query`, `IDocumentOperations.QueueSqlCommand`, `MatchesSql`, `MatchesJsonPath`, `OrderBySql`, `ThenBySql`, `ExplicitSql`) from a value not known at compile time. Local variables are followed.
+
+Not reported: SQL made of compile time values only, i.e. literals, constants, `nameof`, enum members and local variables holding nothing else.
 
 ## Reason for rule
 
@@ -15,7 +17,7 @@ Building a SQL query through string concatenation can create a site for [SQL inj
 
 ## How to fix violations
 
-Use parameterized queries. See [Querying with Postgresql SQL](http://jasperfx.github.io/marten/documentation/documents/querying/sql/) for more.
+Use parameterized queries. See [Querying with Postgresql SQL](https://martendb.io/documents/querying/sql.html) for more.
 
 ## Examples
 
@@ -24,12 +26,46 @@ Use parameterized queries. See [Querying with Postgresql SQL](http://jasperfx.gi
 ```csharp
 var assigneeId = FromUserInput();
 // assigneeId = "'dontcare' or 1 = 1 ; drop table mt_doc_issue ;";
-var user = session.Query<Issue>("where data ->> 'AssigneeId' = " + assigneeId);
+var issues = await session.QueryAsync<Issue>("where data ->> 'AssigneeId' = " + assigneeId);
+```
+
+```csharp
+var assigneeId = FromUserInput();
+var issues = await session.QueryAsync<Issue>($"where data ->> 'AssigneeId' = {assigneeId}");
+```
+
+```csharp
+var assigneeId = FromUserInput();
+var sql = "where true";
+
+if (assigneeId != null)
+{
+    sql += " and data ->> 'AssigneeId' = " + assigneeId;
+}
+
+var issues = await session.QueryAsync<Issue>(sql);
 ```
 
 ### Does not violate
 
 ```csharp
 var assigneeId = FromUserInput();
-var user = session.Query<Issue>("where data ->> 'AssigneeId' = ?", assigneeId);
+var issues = await session.QueryAsync<Issue>("where data ->> 'AssigneeId' = ?", assigneeId);
+```
+
+```csharp
+var assigneeId = FromUserInput();
+var issues = await session.QueryAsync<Issue>($"where data ->> '{nameof(Issue.AssigneeId)}' = ?", assigneeId);
+```
+
+```csharp
+var assigneeId = FromUserInput();
+var sql = "where true";
+
+if (assigneeId != null)
+{
+    sql += " and data ->> 'AssigneeId' = ?";
+}
+
+var issues = await session.QueryAsync<Issue>(sql, assigneeId);
 ```

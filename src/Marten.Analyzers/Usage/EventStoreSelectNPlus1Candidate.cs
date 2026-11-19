@@ -13,29 +13,37 @@ namespace Marten.Analyzers.Usage
 	{
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Descriptors.Marten1001EventStoreSelectNPlus1Candidate);
 
+		// Declared in JasperFx.Events
 		public EventStoreSelectNPlus1Candidate() : base(
-			"IEventStore.Load",
-			"IEventStore.LoadAsync",
-			"IEventStore.AggregateStream",
-			"IEventStore.AggregateStreamAsync")
+			"IQueryEventStore.LoadAsync",
+			"IQueryEventStore.AggregateStreamAsync",
+			"IQueryEventStore.AggregateStreamToLastKnownAsync",
+			"IQueryEventStore.FetchStreamAsync",
+			"IQueryEventStore.FetchStreamStateAsync",
+			"IQueryEventStore.QueryAllRawEvents",
+			"IQueryEventStore.QueryRawEventDataOnly",
+			"IQueryEventStore.QueryByTagsAsync",
+			"IQueryEventStore.AggregateByTagsAsync",
+			"IQueryEventStore.EventsExistAsync",
+			// Redeclared for IDocumentSession.Events
+			"IEventStoreOperations.QueryByTagsAsync",
+			"IEventStoreOperations.AggregateByTagsAsync",
+			"IEventStoreOperations.EventsExistAsync",
+			"IEventStoreOperations.FetchLatest",
+			"IEventStoreOperations.ProjectLatest",
+			"IEventStoreOperations.StreamLatestJson",
+			"IEventStoreOperations.FetchForWriting",
+			"IEventStoreOperations.FetchForExclusiveWriting",
+			"IEventStoreOperations.FetchForWritingByTags",
+			"IEventStoreOperations.FetchManyForWriting",
+			"IEventStoreOperations.WriteToAggregate",
+			"IEventStoreOperations.WriteExclusivelyToAggregate")
 		{
 		}
 		protected override void Analyze(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpressionSyntax,
 			IMethodSymbol methodSymbol)
 		{
-			var ancestors = invocationExpressionSyntax.Ancestors().Any(x =>
-			{
-				switch (x)
-				{
-					case ForEachStatementSyntax _:
-					case ForStatementSyntax _:
-					case WhileStatementSyntax _:
-					case DoStatementSyntax _:
-						return true;
-				}
-
-				return false;
-			});
+			var ancestors = invocationExpressionSyntax.IsWithinIteration();
 
 			// ReSharper disable once InvertIf
 			if (ancestors)

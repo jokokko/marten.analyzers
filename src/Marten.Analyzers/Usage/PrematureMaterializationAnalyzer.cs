@@ -15,7 +15,8 @@ namespace Marten.Analyzers.Usage
 
         public PrematureMaterializationAnalyzer() : base(
             "IQuerySession.Query",
-            "IQuerySession.QueryAsync",
+            "IQuerySession.QueryForNonStaleData",
+            "IDocumentReadOperations.Query",
             "IBatchedQuery.Query"
         )
         {
@@ -24,7 +25,9 @@ namespace Marten.Analyzers.Usage
         private static readonly string[] Methods = {
             "AsEnumerable",
             "ToList",
-            "ToArray"
+            "ToArray",
+            "ToListAsync",
+            "ToAsyncEnumerable"
         };
 
         protected override void Analyze(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpressionSyntax,

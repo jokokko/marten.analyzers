@@ -1,3 +1,5 @@
+version: 2.0.0.{build}
+
 branches:
   only:
   - dev
@@ -10,7 +12,7 @@ skip_commits:
     - assets/*      
     - docs/*    
 
-os: Visual Studio 2017
+image: Visual Studio 2026
 
 configuration: Release
 

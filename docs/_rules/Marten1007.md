@@ -7,7 +7,9 @@ severity: Warning
 
 ## Cause
 
-Task (`System.Threading.Tasks.Task.Task`) closes over session (`Marten.IDocumentSession`).
+Task (`new Task(...)`, `Task task = new(...)`, `Task.Factory.StartNew`, `Task.Run`) closes over session (`Marten.IQuerySession` or anything deriving from it): a local variable, a parameter, or a field or a property used by the task.
+
+Not reported: a method passed in place of a lambda (`Task.Run(Work)`).
 
 ## Reason for rule
 
@@ -22,18 +24,49 @@ Construct sessions per consuming site.
 ### Violates
 
 ```csharp
-var issues = new Task<IEnumerable<Issue>>(() => {		
-    return session.LoadMany<Issue>("Issue-1", "Issue-2");
+var issues = Task.Run(async () => {
+    return await session.LoadManyAsync<Issue>("Issue-1", "Issue-2");
 });
+```
+
+```csharp
+public class IssueHandler(IQuerySession session)
+{
+    public Task<IReadOnlyList<Issue>> Handle()
+    {
+        return Task.Run(async () => {
+            return await session.LoadManyAsync<Issue>("Issue-1", "Issue-2");
+        });
+    }
+}
+```
+
+```csharp
+public class IssueHandler
+{
+    private readonly IQuerySession session;
+
+    public IssueHandler(IQuerySession session)
+    {
+        this.session = session;
+    }
+
+    public Task<IReadOnlyList<Issue>> Handle()
+    {
+        return Task.Run(async () => {
+            return await session.LoadManyAsync<Issue>("Issue-1", "Issue-2");
+        });
+    }
+}
 ```
 
 ### Does not violate
 
 ```csharp
-var issues = new Task<IEnumerable<Issue>>(() => {		
-    using (var session = store.OpenSession())
+var issues = Task.Run(async () => {
+    await using (var session = store.LightweightSession())
     {
-        return session.LoadMany<Issue>("Issue-1", "Issue-2");
+        return await session.LoadManyAsync<Issue>("Issue-1", "Issue-2");
     }
 });
 ```
